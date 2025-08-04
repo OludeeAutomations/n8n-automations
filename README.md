@@ -13,7 +13,7 @@ This repository contains automation workflows I've built using [n8n.io](https://
 I'm Daniel Oludare, an AI automation expert who builds low-code and no-code solutions using tools like n8n, Airtable, Zapier, OpenRouter, and custom APIs.
 
 - Portfolio: [https://oludee.framer.website](https://oludee.framer.website)
-- GitHub: [https://github.com/your-new-username](https://github.com/OludeeAutomation)
+- GitHub: [https://github.com/your-new-username](https://github.com/OludeeAutomations)
 
 ## 🚀 Coming Soon
 - More workflows (CRM sync, Airtable finance audits, webhook tools)
