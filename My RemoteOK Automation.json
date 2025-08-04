@@ -1,0 +1,170 @@
+{
+  "name": "My RemoteOK Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5f3e24da-d39f-4076-a4e9-d55fdf3c713e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://remoteok.com/api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "f061f825-79fb-452c-a9d3-9bce38db99f9",
+      "name": "Fetch RemoteOK Jobs"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Remove the first item (metadata) and return only jobs\nreturn items.slice(1);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "9fe0f977-6136-4747-9181-c7c7aa7252d7",
+      "name": "Remove Metadata"
+    },
+    {
+      "parameters": {
+        "jsCode": "const keywords = [\"n8n\", \"typescript\", \"remote nigeria\"]; // ← customize this list\n\nreturn items.filter(item => {\n  const job = item.json;\n\n  const position = (job.position || \"\").toLowerCase();\n  const tags = (job.tags || []).map(tag => tag.toLowerCase());\n  const company = (job.company || \"\").toLowerCase();\n\n  // Combine all fields into one searchable string\n  const combinedText = [position, ...tags, company].join(\" \");\n\n  // Check if any keyword is found\n  return keywords.some(keyword => combinedText.includes(keyword));\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "1e9c7d50-557b-4168-a6e2-7f587213d2bf",
+      "name": "Match Keyword Jobs"
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\n\nreturn items.filter(item => {\n  const jobId = item.json.id?.toString();\n\n  // If we've seen this ID before, skip it\n  if (staticData[jobId]) {\n    return false;\n  }\n\n  // Otherwise, mark it as seen and pass it through\n  staticData[jobId] = true;\n  return true;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "d040fd14-35ac-4412-99cb-7c364f310c14",
+      "name": "Deduplication"
+    },
+    {
+      "parameters": {
+        "sendTo": "oludee24@gmail.com ",
+        "subject": "=🚀 New Job: {{$json.position}} at {{$json.company}}",
+        "message": "=**Position**: {{$json.position}}   **Company**: {{$json.company}}   **Tags**: {{$json.tags.join(\", \")}}   **Apply Link**: {{$json.url}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "aa4dd5f8-4236-4697-8f92-a3960bb265a7",
+      "name": "Send a message",
+      "webhookId": "a16f51f5-8f09-4a05-b7cd-9463efc96357",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Cwaqnl41Oj15iQet",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch RemoteOK Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch RemoteOK Jobs": {
+      "main": [
+        [
+          {
+            "node": "Remove Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Metadata": {
+      "main": [
+        [
+          {
+            "node": "Match Keyword Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match Keyword Jobs": {
+      "main": [
+        [
+          {
+            "node": "Deduplication",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplication": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6612773f-706f-422f-b8b9-131f5f322354",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "529510884bc02c16a980712ea26a9d73b440d09dc93ddefa134fede269287183"
+  },
+  "id": "YyZ05nO8YoD4Q5Fj",
+  "tags": []
+}
